@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Image,
@@ -7,41 +7,70 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  FlatList,
 } from "react-native";
 import commonStyles from "../styles/commonCss";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../utils/store";
-import { fetchData } from "../utils/reduxToolkit";
 import { palette } from "../styles/palette";
-import Icon from 'react-native-vector-icons/MaterialIcons'
+import Icon from "react-native-vector-icons/MaterialIcons";
+import Card from "../src/common/layout/Cards";
 
 const AllFlights = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const data = useSelector((state: RootState) => state.data.items);
-  const status = useSelector((state: RootState) => state.data.status);
+  //data.result
+  const [flightData, setFlightData] = useState([]);
+
+  const fetchData = async () => {
+    const response = await fetch("https://api.npoint.io/4829d4ab0e96bfab50e7");
+    const data = await response.json();
+    setFlightData(data.data.result);
+  };
 
   useEffect(() => {
-    dispatch(fetchData());
-  }, [dispatch]);
+    fetchData();
+  }, []);
 
-  console.log({ data, status });
   return (
     <View style={commonStyles.container}>
       <View style={styles.header}>
-        <View>
+        <View style={styles.topView}>
           <Text style={styles.headingText}>Let's</Text>
           <Text style={styles.expolreText}>Explore</Text>
         </View>
-        <View>
-        <Icon name="search" size={30} color="#4F8EF7" />
+        <View style={styles.searchVeiw}>
+          <Icon name="search" size={40} color={palette.secondary} />
         </View>
       </View>
-      <ScrollView style={styles.scrollView}></ScrollView>
+      <FlatList
+        data={flightData}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <Card item={item} />}
+      />
+      <TouchableOpacity style={commonStyles.buttonContainer}>
+        <Text style={commonStyles.buttonText}>Search</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  topView: {
+    // display:'flex',
+    // flexDirection:"row",
+    // justifyContent:"space-between"
+  },
+  searchVeiw: {
+    backgroundColor: palette.white,
+    borderRadius: 50,
+    padding: 5,
+    marginVertical: 30,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.6,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
   expolreText: {
     color: palette.secondary,
     fontSize: 35,
@@ -63,6 +92,9 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "flex-start",
     width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   headerTitle: {
     color: "#fff",
